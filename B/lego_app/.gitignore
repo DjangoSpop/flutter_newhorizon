@@ -1,0 +1,25 @@
+# Ignore everything
+*
+
+# Do not ignore .gitignore file
+!/.gitignore
+
+# Do not ignore pubspec files (if needed)
+!/pubspec.yaml
+!/pubspec.lock
+
+# Do not ignore lib directory
+!/lib/
+
+# Do not ignore files in lib directory
+!/lib/**
+
+# Ignore build outputs and other directories
+/build/
+/.dart_tool/
+/.idea/
+/.vscode/
+/.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata

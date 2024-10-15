@@ -32,19 +32,35 @@ dependencies:
     sdk: flutter
 
 
+
+
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  firebase_auth: ^5.2.1
   image_picker: ^1.1.2
   flutter_svg: ^2.0.10+1
   lottie: ^3.1.2
   carousel_slider: ^4.0.0
   uuid: ^4.5.0
+  google_mlkit_barcode_scanning: ^0.3.0
+  http: ^1.2.2
+  google_ml_kit: ^0.11.0
+  shared_preferences: 2.3.2
+  flutter_barcode_scanner: ^2.0.0
+  flutter_dropzone: ^4.0.3
+  flutter_secure_storage: ^9.2.2
+  path_provider: ^2.1.4
+  google_sign_in: ^6.1.0
+  intl: 0.19.0
+  google_mlkit_text_recognition: ^0.3.0
+  get: ^4.6.5
+  flutter_localization: ^0.2.1
+  logger: ^2.4.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+    
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -57,12 +73,12 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  generate: true
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+ 
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/animations/
