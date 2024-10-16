@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class User {
   final String id;
   final String username;
@@ -7,6 +5,8 @@ class User {
   final String role;
   final String phone;
   final String address;
+  final String shopName;
+  final String shopDescription;
 
   User({
     required this.id,
@@ -15,16 +15,20 @@ class User {
     required this.role,
     required this.phone,
     required this.address,
+    required this.shopName,
+    required this.shopDescription,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? '',
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
+      shopName: json['shopname'] ?? '',
+      shopDescription: json['shopdes'] ?? '',
     );
   }
 
@@ -36,6 +40,8 @@ class User {
       'role': role,
       'phone': phone,
       'address': address,
+      'shopname': shopName,
+      'shopdes': shopDescription,
     };
   }
 
@@ -46,6 +52,8 @@ class User {
     String? role,
     String? phone,
     String? address,
+    String? shopName,
+    String? shopDescription,
   }) {
     return User(
       id: id ?? this.id,
@@ -54,12 +62,14 @@ class User {
       role: role ?? this.role,
       phone: phone ?? this.phone,
       address: address ?? this.address,
+      shopName: shopName ?? this.shopName,
+      shopDescription: shopDescription ?? this.shopDescription,
     );
   }
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, email: $email, role: $role, phone: $phone, address: $address)';
+    return 'User(id: $id, username: $username, email: $email, role: $role, phone: $phone, address: $address, shopName: $shopName, shopDescription: $shopDescription)';
   }
 
   @override
@@ -72,7 +82,9 @@ class User {
         other.email == email &&
         other.role == role &&
         other.phone == phone &&
-        other.address == address;
+        other.address == address &&
+        other.shopName == shopName &&
+        other.shopDescription == shopDescription;
   }
 
   @override
@@ -82,6 +94,8 @@ class User {
         email.hashCode ^
         role.hashCode ^
         phone.hashCode ^
-        address.hashCode;
+        address.hashCode ^
+        shopName.hashCode ^
+        shopDescription.hashCode;
   }
 }

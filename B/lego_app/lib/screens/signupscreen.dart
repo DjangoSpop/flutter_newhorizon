@@ -11,8 +11,10 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _password2Controller = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _shopnameController = TextEditingController();
   String _selectedRole = 'seller'; // Default role
   String _errorMessage = '';
 
@@ -24,9 +26,11 @@ class _SignupScreenState extends State<SignupScreen> {
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        password2: _password2Controller.text.trim(),
         role: _selectedRole,
         phone: _phoneController.text.trim(),
         address: _addressController.text.trim(),
+        shopname: _shopnameController.text.trim(),
       );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('User registered successfully'),
@@ -65,6 +69,12 @@ class _SignupScreenState extends State<SignupScreen> {
               obscureText: true,
             ),
             SizedBox(height: 10),
+            TextField(
+              controller: _password2Controller,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            SizedBox(height: 10),
             DropdownButtonFormField<String>(
               value: _selectedRole,
               decoration: InputDecoration(labelText: 'Role'),
@@ -90,6 +100,12 @@ class _SignupScreenState extends State<SignupScreen> {
             TextField(
               controller: _addressController,
               decoration: InputDecoration(labelText: 'Address'),
+              maxLines: 2,
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _shopnameController,
+              decoration: InputDecoration(labelText: 'Shop Name'),
               maxLines: 2,
             ),
             SizedBox(height: 20),

@@ -5,6 +5,7 @@ class Product {
   String name;
   String description;
   double price;
+  double discountedPrice;
   String barcode;
   String category;
   String subcategory;
@@ -22,6 +23,7 @@ class Product {
     required this.name,
     required this.description,
     required this.price,
+    required this.discountedPrice,
     required this.barcode,
     required this.category,
     required this.subcategory,
@@ -41,6 +43,7 @@ class Product {
       name: json['name'],
       description: json['description'],
       price: json['price'].toDouble(),
+      discountedPrice: json['discountedPrice'].toDouble(),
       barcode: json['barcode'],
       category: json['category'],
       subcategory: json['subcategory'],
@@ -61,6 +64,7 @@ class Product {
       'name': name,
       'description': description,
       'price': price,
+      'discountedPrice': discountedPrice,
       'barcode': barcode,
       'category': category,
       'subcategory': subcategory,

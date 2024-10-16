@@ -33,7 +33,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   late final TextEditingController _categoryController;
   late final TextEditingController _subcategoryController;
   late final TextEditingController _brandController;
-
+  late final TextEditingController _discController;
   List<String> _sizes = [];
   List<String> _colors = [];
   List<String> _imagePaths = [];
@@ -96,6 +96,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           name: _nameController.text.trim(),
           description: _descriptionController.text.trim(),
           price: double.parse(_priceController.text),
+          discountedPrice: double.parse(_discController.text),
           barcode: _barcodeController.text.trim(),
           category: _categoryController.text.trim(),
           subcategory: _subcategoryController.text.trim(),

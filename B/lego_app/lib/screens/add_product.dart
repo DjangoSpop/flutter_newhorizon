@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:firebase_storage/firebase_storage.dart'; // Remove if not using Firebase
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:lego_app/controllers/product_controller.dart';
+import 'package:lego_app/models/product.dart';
 import '../service/api_service.dart';
-import '../service/auth_service.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:lego_app/controllers/auth_controller.dart';
 
@@ -17,11 +17,14 @@ class AddProductScreen extends StatefulWidget {
 class _AddProductScreenState extends State<AddProductScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final ProductController productController = Get.find<ProductController>();
   final ApiService apiService =
       ApiService(baseUrl: 'http://localhost:8000/api/products');
   final AuthController authController = Get.find<AuthController>();
   final isLoading = false.obs;
-
+  RxString selectedCategory = ''.obs;
+  RxString selectedSize = ''.obs;
+  RxList<File> images = <File>[].obs;
   late TabController _tabController;
   final TextEditingController _barcodeController = TextEditingController();
   final TextEditingController _totalQuantityController =
@@ -143,71 +146,30 @@ class _AddProductScreenState extends State<AddProductScreen>
     }
   }
 
-  Future<void> submitForm() async {
-    if (_formKey.currentState!.validate() && _images.isNotEmpty) {
-      try {
-        isLoading.value = true;
+  void _submitForm() {
+    if (_formKey.currentState!.validate() && images.isNotEmpty) {
+      final product = Product(
+        id: '', // ID will be assigned by the server
+        name: _nameProductController.text,
+        description: _descriptionController.text,
+        price: double.tryParse(_buyNowPriceController.text) ?? 0.0,
+        barcode: _barcodeController.text,
+        category: _selectedCategory!,
+        subcategory: '',
+        sizes: _sizesController.map((controller) => controller.text).toList(),
+        colors: [],
+        brand: '',
+        quantity: int.tryParse(_totalQuantityController.text) ?? 0,
+        inStock: true,
+        imagePaths: [],
+        rating: 0.0,
+        reviewCount: 0,
+        discountedPrice:
+            double.tryParse(_discountedPriceController.text) ?? 0.0,
+      );
 
-        // Upload images using your custom API
-        List<String> imageUrls = await Future.wait(
-          _images.map((image) => _uploadImage(image)),
-        );
-
-        // Prepare sizes and quantities
-        Map<String, int> sizes = {};
-        for (int i = 0; i < _sizesController.length; i++) {
-          String size = _sizesController[i].text;
-          String quantityKey = 'size_$i';
-          int quantity = int.parse(_sizeQuantityControllers[quantityKey]!.text);
-          sizes[size] = quantity;
-        }
-
-        // Send product data to your custom API
-        final productData = {
-          'name': _nameProductController.text,
-          'barcode': _barcodeController.text,
-          'description': _descriptionController.text,
-          'minQuantity': int.parse(_minQuantityController.text),
-          'discountedPrice': double.parse(_discountedPriceController.text),
-          'buyNowPrice': double.parse(_buyNowPriceController.text),
-          'totalQuantity': int.parse(_totalQuantityController.text),
-          'category': _selectedCategory,
-          'sizes': sizes,
-          'imageUrls': imageUrls,
-          'createdAt': DateTime.now().toIso8601String(),
-        };
-
-        // API request to add the product
-        await apiService.addProduct(productData);
-
-        Get.snackbar('Success', 'Product added successfully',
-            snackPosition: SnackPosition.BOTTOM);
-
-        _resetForm();
-      } catch (e) {
-        Get.snackbar('Error', 'Failed to add product: $e',
-            snackPosition: SnackPosition.BOTTOM);
-      } finally {
-        isLoading.value = false;
-      }
-    } else {
-      Get.snackbar('Error', 'Please fill all fields and add images.',
-          snackPosition: SnackPosition.BOTTOM);
-    }
-  }
-
-  Future<String> _uploadImage(File imageFile) async {
-    try {
-      // Implement your custom API logic here
-      // For example:
-      // final response = await apiService.uploadImage(imageFile);
-      // return response['imageUrl'];
-
-      // Placeholder implementation
-      throw UnimplementedError('Image upload not implemented');
-    } catch (e) {
-      print('Error uploading image: $e');
-      throw e;
+      productController.addProduct(product, images);
+      Get.back(); // Navigate back after adding the product
     }
   }
 
@@ -263,7 +225,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: isLoading.value ? null : submitForm,
+        onPressed: isLoading.value ? null : _submitForm,
         child: Icon(Icons.save),
       ),
     );

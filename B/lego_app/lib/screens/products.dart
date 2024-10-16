@@ -1,13 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lego_app/models/product.dart';
 import 'package:lego_app/screens/edit_product.dart';
 import 'package:lego_app/screens/product_overview.dart';
 import 'package:lego_app/service/product_service.dart';
 import 'package:lego_app/models/category.dart';
+
 class ProductListScreen extends StatefulWidget {
   final ProductService productService;
 
-  const ProductListScreen({Key? key, required this.productService}) : super(key: key);
+  const ProductListScreen({Key? key, required this.productService})
+      : super(key: key);
 
   @override
   _ProductListScreenState createState() => _ProductListScreenState();
@@ -42,7 +46,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> _addProduct(Product product) async {
     try {
-      await widget.productService.addProduct(product, []); // Assuming no images for now
+      await widget.productService
+          .addProduct(product, []); // Assuming no images for now
       _refreshProducts();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product added successfully')),
@@ -57,7 +62,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> _editProduct(Product updatedProduct) async {
     try {
-      await widget.productService.updateProduct(updatedProduct);
+      List<File> newImages = []; // Define newImages as an empty list for now
+      await widget.productService.updateProduct(updatedProduct, newImages);
       _refreshProducts();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product updated successfully')),
@@ -114,7 +120,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
           return ListView.separated(
             padding: const EdgeInsets.all(16.0),
             itemCount: products.length,
-            separatorBuilder: (context, index) => const Divider(color: Colors.grey),
+            separatorBuilder: (context, index) =>
+                const Divider(color: Colors.grey),
             itemBuilder: (context, index) {
               final product = products[index];
               return _buildProductListItem(product, screenWidth);

@@ -1,45 +1,48 @@
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:lego_app/models/product.dart'; // Import your Product model
+import 'package:lego_app/models/product.dart';
+import 'package:lego_app/service/product_service.dart';
+import 'dart:io';
 
 class ProductController extends GetxController {
   // Observable variables
-  var productList = <Product>[].obs; // Observable list of products
-  var isLoading = true.obs;          // Observable boolean for loading state
-  var errorMessage = ''.obs;         // Observable string for error messages
+  var productList = <Product>[].obs;
+  var isLoading = true.obs;
+  var errorMessage = ''.obs;
+
+  late final ProductService _productService;
 
   @override
   void onInit() {
     super.onInit();
-    fetchProducts();  // Fetch products when the controller is initialized
+    _productService = Get.find<ProductService>();
+    fetchProducts();
   }
 
-  // Function to fetch products from the API
+  // Fetch products from the API
   Future<void> fetchProducts() async {
     try {
-      isLoading(true);  // Set loading state to true
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('accessToken');
-
-      final response = await http.get(
-        Uri.parse('https://your-api-url/api/products/'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body) as List;
-        productList.value = data.map((json) => Product.fromJson(json)).toList();  // Update productList with data
-      } else {
-        errorMessage('Failed to load products: ${response.statusCode}');  // Handle server errors
-      }
+      isLoading(true);
+      List<Product> products = await _productService.fetchProducts();
+      productList.assignAll(products);
     } catch (error) {
-      errorMessage('Error occurred: $error');  // Handle network or parsing errors
+      errorMessage.value = 'Error occurred: $error';
     } finally {
-      isLoading(false);  // Always set loading state to false
+      isLoading(false);
     }
   }
+
+  // Add a new product
+  Future<void> addProduct(Product product, List<File> images) async {
+    try {
+      isLoading(true);
+      Product newProduct = await _productService.addProduct(product, images);
+      productList.add(newProduct);
+    } catch (error) {
+      errorMessage.value = 'Error occurred while adding product: $error';
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // Additional methods for updating and deleting products can be added similarly
 }

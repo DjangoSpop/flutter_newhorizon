@@ -13,6 +13,7 @@ import 'package:lego_app/screens/manage_orders.dart';
 import 'package:lego_app/screens/products.dart';
 import 'package:lego_app/screens/signupscreen.dart';
 import 'package:lego_app/service/auth_service.dart';
+import 'package:lego_app/service/auth_wrapper.dart';
 import 'package:lego_app/service/group_service.dart';
 import 'package:lego_app/service/product_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,23 +24,18 @@ void main() async {
   runApp(MyApp());
 }
 
+// Initialize all necessary services and controllers
 Future<void> initServices() async {
-  // Initialize services and ensure they return the instance
+  // Initialize services
   await Get.putAsync<AuthService>(() async => await AuthService().init());
   await Get.putAsync<ProductService>(() async => await ProductService().init());
-  // Use Get.put since GroupBuyService doesn't require async initialization
   Get.put<GroupBuyService>(GroupBuyService());
-}
 
-class AppBinding extends Bindings {
-  @override
-  void dependencies() {
-    // Ensure services are available before initializing controllers
-    Get.put<AuthController>(AuthController(Get.find<AuthService>()));
-    Get.put<ProductController>(ProductController());
-    Get.put<CartController>(CartController());
-    Get.put<GroupBuyController>(GroupBuyController());
-  }
+  // Initialize controllers
+  Get.put<AuthController>(AuthController(Get.find<AuthService>()));
+  Get.put<ProductController>(ProductController());
+  Get.put<CartController>(CartController());
+  Get.put<GroupBuyController>(GroupBuyController());
 }
 
 class MyApp extends StatelessWidget {
@@ -55,7 +51,6 @@ class MyApp extends StatelessWidget {
             .textTheme
             .apply(bodyColor: Colors.white, displayColor: Colors.white),
       ),
-      // Removed initialRoute to avoid conflicts with 'home'
       getPages: [
         GetPage(name: '/explain', page: () => ExplinationScreen()),
         GetPage(name: '/login', page: () => LoginScreen()),
@@ -71,7 +66,7 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(name: '/manageOrders', page: () => ManageOrdersScreen()),
       ],
-      initialBinding: AppBinding(),
+      // Removed initialBinding since controllers are initialized in initServices
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -91,32 +86,5 @@ class MyApp extends StatelessWidget {
       },
       home: AuthWrapper(), // Set home to AuthWrapper
     );
-  }
-}
-
-class AuthWrapper extends GetWidget<AuthController> {
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(child: CircularProgressIndicator(color: Colors.white)),
-        );
-      } else if (controller.user.value == null) {
-        return LoginScreen();
-      } else {
-        switch (controller.user.value!.role) {
-          case 'admin':
-            return AdminMainScreen();
-          case 'seller':
-            return AddProductScreen();
-          case 'buyer':
-            return BuyerMainScreen();
-          default:
-            return LoginScreen();
-        }
-      }
-    });
   }
 }

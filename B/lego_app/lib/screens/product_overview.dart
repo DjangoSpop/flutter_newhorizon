@@ -30,6 +30,7 @@ class _ProductOverviewState extends State<ProductOverview> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _descountController = TextEditingController();
   String? selectedSize;
   String? selectedColor;
   List<File> _productImages = [];
@@ -49,6 +50,7 @@ class _ProductOverviewState extends State<ProductOverview> {
         name: '',
         description: '',
         price: 0,
+        discountedPrice: 0,
         barcode: '',
         category: '',
         subcategory: '',
@@ -70,6 +72,7 @@ class _ProductOverviewState extends State<ProductOverview> {
     _nameController.text = product.name;
     _descriptionController.text = product.description;
     _priceController.text = product.price.toString();
+    _descountController.text = product.discountedPrice.toString();
     _quantityController.text = product.quantity.toString();
     selectedSize = product.sizes.isNotEmpty ? product.sizes.first : null;
     selectedColor = product.colors.isNotEmpty ? product.colors.first : null;
@@ -92,6 +95,8 @@ class _ProductOverviewState extends State<ProductOverview> {
         name: _nameController.text,
         description: _descriptionController.text,
         price: double.parse(_priceController.text),
+        discountedPrice: double.parse(_descountController
+            .text), // You might want to add a discounted price field
         barcode: '', // You might want to add a barcode field
         category: '', // Add category field
         subcategory: '', // Add subcategory field
