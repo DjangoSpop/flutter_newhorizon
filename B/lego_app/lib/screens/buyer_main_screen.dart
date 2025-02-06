@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lego_app/widgets/product_detail_drawer.dart';
-import 'cart_screen.dart';
-import 'package:lego_app/controllers/product_controller.dart';
 import 'package:lego_app/controllers/cart_controller.dart';
 import 'package:lego_app/controllers/group_buy_controller.dart'; // Ensure this import is correct and the file exists
-import 'package:lego_app/models/product.dart';
-
-import 'package:lego_app/controllers/cart_controller.dart';
 import 'package:lego_app/controllers/product_controller.dart';
+import 'package:lego_app/models/product.dart';
+import 'package:lego_app/widgets/product_detail_drawer.dart';
+
+import 'cart_screen.dart';
 
 class BuyerMainScreen extends StatefulWidget {
   const BuyerMainScreen({super.key});
@@ -125,7 +123,7 @@ class ProductTile extends StatelessWidget {
                     onPressed: () {
                       // Join Group Buy logic
                       Get.find<GroupBuyController>()
-                          .joinGroupBuy(product.id, product.name);
+                          .joinGroupBuy("userId", product.id, product.sizes[0]);
                     },
                     child: Text('Join Group Buy'),
                     style: ElevatedButton.styleFrom(

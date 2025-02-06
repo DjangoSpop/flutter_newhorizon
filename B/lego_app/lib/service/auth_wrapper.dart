@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lego_app/controllers/auth_controller.dart';
 import 'package:get/get.dart';
+import 'package:lego_app/controllers/auth_controller.dart';
 import 'package:lego_app/screens/add_product.dart';
 import 'package:lego_app/screens/admin.dart';
 import 'package:lego_app/screens/buyer_main_screen.dart';
@@ -27,11 +27,11 @@ class AuthWrapper extends StatelessWidget {
           case 'buyer':
             return BuyerMainScreen();
           default:
-            return ExplinationScreen();
+            return const ExplinationScreen();
         }
       } else {
         // User is not authenticated
-        return ExplinationScreen();
+        return const ExplinationScreen();
       }
     });
   }

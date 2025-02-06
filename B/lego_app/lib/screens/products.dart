@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:lego_app/models/product.dart';
 import 'package:lego_app/screens/edit_product.dart';
 import 'package:lego_app/screens/product_overview.dart';
@@ -25,7 +26,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     super.initState();
     _productsFuture = _fetchProducts();
   }
-
+void _GroupBuyScreen(){
+  Get.toNamed('/groups');
+}
+  void _ViewCart(){
+    Get.toNamed('/cart');
+  }
   Future<List<Product>> _fetchProducts() async {
     try {
       return await widget.productService.getProducts();
@@ -102,6 +108,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _navigateToEditProductScreen(null),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshProducts,
+          ),
+          IconButton(
+            icon: const Icon(Icons.group),
+            onPressed: _GroupBuyScreen,
+          ),
+          IconButton(
+            icon: const Icon(Icons.checkroom_outlined),
+            onPressed: _ViewCart,
           ),
         ],
       ),

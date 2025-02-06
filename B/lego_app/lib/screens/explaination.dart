@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lego_app/screens/admin.dart';
 import 'package:lego_app/screens/login.dart';
 import 'package:lottie/lottie.dart';
 
@@ -15,26 +14,26 @@ class _ExplinationScreenState extends State<ExplinationScreen> {
   int _currentIndex = 0;
   final List<Map<String, dynamic>> _steps = [
     {
-      'title': 'Welcome to our App',
+      'animation': 'assets/animations/welcome.json',
+      'title': 'مرحبا بك في برنامج اداره المخازن',
       'description':
           'This app is designed to help you manage your store efficiently',
-      'animation': 'assets/animations/welcome.json',
     },
     {
-      'title': 'Add Products',
-      'description': 'Easily add products to your store with a few clicks',
       'animation': 'assets/animations/add_product.json',
+      'title': 'أضافه المنتجات',
+      'description': 'Easily add products to your store with a few clicks',
     },
     {
-      'title': 'Manage Orders',
-      'description': 'Keep track of all your orders and manage them easily',
       'animation': 'assets/animations/manage.json',
+      'title': 'اداره الطلبات',
+      'description': 'Keep track of all your orders and manage them easily',
     },
     {
-      'title': 'Start selling',
+      'animation': 'assets/animations/gonow.json',
+      'title': 'أبدء البيع',
       'description':
           'Youre all set to start selling in bulk with LegoMensWear.',
-      'animation': 'assets/animations/gonow.json',
     },
   ];
 
@@ -74,7 +73,7 @@ class _ExplinationScreenState extends State<ExplinationScreen> {
                         },
                         child: Text('Previous'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
+                          backgroundColor: Colors.grey[900],
                         ),
                       ),
                     SizedBox(width: 20),

@@ -5,12 +5,11 @@ import 'package:lego_app/service/auth_service.dart';
 import 'package:logger/logger.dart';
 
 class AuthController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
+  final AuthService _authService;
   final Logger _logger = Logger();
+  final _userRole = Get.find<AuthService>().userRole;
+  AuthController(this._authService);
 
-  AuthController(AuthService find);
-
-  // Observables
   Rx<User?> get user => _authService.currentUser;
   RxBool get isLoading => _authService.isLoading;
   RxBool get isAuthenticated => _authService.isAuthenticated;
@@ -18,82 +17,66 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Check login status when the controller is initialized
     checkLoginStatus();
   }
 
-  /// Checks if the user is logged in and updates the user state.
   Future<void> checkLoginStatus() async {
-    isLoading.value = true;
     try {
-      // Fetch the current user from the AuthService
-      await _authService.fetchCurrentUser();
-      // No need to manually set user or isAuthenticated here since AuthService updates them
+      await _authService.checkAuthStatus();
+      _logger.i(
+          'Login status checked. User authenticated: ${isAuthenticated.value}');
     } catch (e) {
       _logger.e('Error checking login status', error: e);
-      Get.snackbar('Error', 'Unable to check login status. Please try again.');
-    } finally {
-      isLoading.value = false;
+      Get.snackbar('Error', 'Unable to verify login status. Please try again.');
     }
   }
 
-  /// Logs in the user with the provided credentials.
   Future<void> login(String username, String password) async {
-    isLoading.value = true;
     try {
-      // Perform login through AuthService
       await _authService.login(username, password);
-      // Navigate based on user role after successful login
-      navigateBasedOnRole();
+      _logger.i('User logged in successfully: ${user.value?.username}');
+
+      // final userRole = user.value?.role; ;
+      // navigateBasedOnRole(userRole!);
     } catch (e) {
       _logger.e('Login error', error: e);
-      Get.snackbar('Error', 'Failed to login. Please check your credentials.');
-    } finally {
-      isLoading.value = false;
+      Get.snackbar(
+          'Login Failed', 'Please check your credentials and try again.');
     }
   }
 
-  /// Navigates to the appropriate screen based on the user's role.
-  void navigateBasedOnRole() {
-    if (user.value != null) {
-      switch (user.value!.role) {
-        case 'admin':
-          Get.offAllNamed('/admin');
-          break;
-        case 'seller':
-          Get.offAllNamed('/addProduct');
-          break;
-        case 'buyer':
-          Get.offAllNamed('/buyer');
-          break;
-        default:
-          _logger.w('Unknown user role: ${user.value!.role}');
-          Get.snackbar('Error', 'Unknown user role. Please contact support.');
-          Get.offAllNamed('/login');
-      }
-    } else {
-      // If user is null, navigate to login
-      Get.offAllNamed('/login');
+  void navigateBasedOnRole(String userRole) {
+    final userRole = user.value?.role;
+    _logger.i('Navigating based on user role: $userRole');
+
+    switch (userRole) {
+      case 'admin':
+        Get.offAllNamed('/admin');
+        break;
+      case 'seller':
+        Get.offAllNamed('/addProduct');
+        break;
+      case 'buyer':
+        Get.offAllNamed('/buyer');
+        break;
+      default:
+        _logger.w('Unknown or null user role: $userRole');
+        Get.snackbar('Error', 'Invalid user role. Please contact support.');
+        Get.offAllNamed('/login');
     }
   }
 
-  /// Logs out the current user.
   Future<void> logout() async {
-    isLoading.value = true;
     try {
-      // Perform logout through AuthService
       await _authService.logout();
-      // After logout, navigate to the login screen
+      _logger.i('User logged out successfully');
       Get.offAll(() => LoginScreen());
     } catch (e) {
       _logger.e('Logout error', error: e);
-      Get.snackbar('Error', 'Failed to logout. Please try again.');
-    } finally {
-      isLoading.value = false;
+      Get.snackbar('Logout Failed', 'An error occurred. Please try again.');
     }
   }
 
-  /// Registers a new user with the provided details.
   Future<void> register({
     required String username,
     required String password,
@@ -104,9 +87,7 @@ class AuthController extends GetxController {
     required String shopname,
     required String address,
   }) async {
-    isLoading.value = true;
     try {
-      // Perform registration through AuthService
       await _authService.registerWithEmailAndPassword(
         username: username,
         password: password,
@@ -117,13 +98,12 @@ class AuthController extends GetxController {
         shopname: shopname,
         address: address,
       );
-      // Navigate based on user role after successful registration
-      navigateBasedOnRole();
+      _logger.i('User registered successfully: $username');
+      navigateBasedOnRole(role);
     } catch (e) {
       _logger.e('Registration error', error: e);
-      Get.snackbar('Error', 'Failed to register. Please try again.');
-    } finally {
-      isLoading.value = false;
+      Get.snackbar(
+          'Registration Failed', 'An error occurred. Please try again.');
     }
   }
 }

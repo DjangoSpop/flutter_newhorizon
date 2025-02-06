@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lego_app/models/group_buy_item.dart';
-import 'package:lego_app/models/product.dart';
 import 'package:lego_app/controllers/cart_controller.dart';
 import 'package:lego_app/controllers/group_buy_controller.dart';
+import 'package:lego_app/models/group_buy_item.dart';
+import 'package:lego_app/models/product.dart';
 
 class ProductDetailDrawer extends StatelessWidget {
   final Product product;
@@ -91,19 +91,26 @@ class ProductDetailDrawer extends StatelessWidget {
                       originalPrice: product.price,
                       groupBuyPrice: product.price * 0.9, // Example discount
                       minQuantity: 5, // Example minimum quantity
-                      maxQuantity: 100, // Example maximum quantity
-                      currentQuantity: 0, // Example current quantity
+                      maxQuantity:
+                          100, // Example maximum quantity// Example current quantity
                       status: 'active', // Example status
                       startDate: DateTime.now(),
                       endDate: DateTime.now().add(Duration(days: 7)),
                       productId: product.id, // Assuming product has an id field
-                      sellerId: 'someSellerId', // Replace with actual seller id
-                      participantIds: [], // Example participant ids
+                      sellerId: 'someSellerId',
+                      sizeDistribution: SizeDistribution(
+                        currentQuantities: {'S': 0, 'M': 0, 'L': 0, 'XL': 0},
+                        targetQuantities: {'S': 10, 'M': 20, 'L': 30, 'XL': 40},
+                      ),
+                      participants: [],
+                      availableSizes: [], //TODO getting the availavle sizez from the api  //TODO adding the users ids  // Example seller id
+                      // Replace with actual seller id, sizeDistribution: SizeDistribution.fromJson(json), // Example participant ids
                     );
 
                     Get.find<GroupBuyController>().joinGroupBuy(
                       groupBuyItem.id,
                       product.id,
+                      product.name,
                     );
                     Get.snackbar('Joined Group Buy',
                         'You have joined the group buy for ${product.name}');

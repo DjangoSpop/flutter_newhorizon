@@ -22,7 +22,7 @@ class ProductController extends GetxController {
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
-      List<Product> products = await _productService.fetchProducts();
+      List<Product> products = await _productService.getProducts();
       productList.assignAll(products);
     } catch (error) {
       errorMessage.value = 'Error occurred: $error';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 
 import 'checkout_screen.dart';
 
@@ -28,7 +29,7 @@ class _CartScreenState extends State<CartScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to checkout screen
-          Navigator.push(context, MaterialPageRoute(builder: (context) => CheckoutScreen()));
+         Get.toNamed('checkout');
         },
         child: Icon(Icons.shopping_cart_checkout),
       ),

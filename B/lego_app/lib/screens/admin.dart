@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 
 class AdminMainScreen extends StatelessWidget {
   final int totalProducts = 50; // Mock data for total products
@@ -10,7 +11,7 @@ class AdminMainScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Admin Dashboard'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -38,7 +39,7 @@ class AdminMainScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/addProduct');
+                Get.toNamed ( '/addProduct');
               },
               child: Text('add Products'),
               style: ElevatedButton.styleFrom(
@@ -47,7 +48,7 @@ class AdminMainScreen extends StatelessWidget {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/manageorders');
+                Get.toNamed ( '/addProduct');
               },
               child: Text('Manage Orders'),
               style: ElevatedButton.styleFrom(
@@ -56,7 +57,7 @@ class AdminMainScreen extends StatelessWidget {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/products');
+                Get.toNamed('/products');
               },
               child: Text('View Products'),
               style: ElevatedButton.styleFrom(

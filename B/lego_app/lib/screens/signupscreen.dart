@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
+
 import '../service/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -18,7 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
   String _selectedRole = 'seller'; // Default role
   String _errorMessage = '';
 
-  final List<String> _roles = ['seller', 'manufacturer', 'admin'];
+  final List<String> _roles = ['seller', 'manager', 'admin', 'buyer'];
 
   Future<void> _registerUser() async {
     try {
@@ -54,30 +56,31 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(labelText: 'Username'.tr),
             ),
             SizedBox(height: 10),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: 'Email'.tr),
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 10),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: 'Password'.tr),
               obscureText: true,
             ),
             SizedBox(height: 10),
             TextField(
               controller: _password2Controller,
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: 'Password'.tr),
               obscureText: true,
             ),
             SizedBox(height: 10),
             DropdownButtonFormField<String>(
               value: _selectedRole,
-              decoration: InputDecoration(labelText: 'Role'),
+              decoration: InputDecoration(labelText: 'Role'.tr),
+              dropdownColor: Colors.black,
               items: _roles.map((String role) {
                 return DropdownMenuItem<String>(
                   value: role,
@@ -93,19 +96,19 @@ class _SignupScreenState extends State<SignupScreen> {
             SizedBox(height: 10),
             TextField(
               controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Phone'),
+              decoration: InputDecoration(labelText: 'Phone'.tr),
               keyboardType: TextInputType.phone,
             ),
             SizedBox(height: 10),
             TextField(
               controller: _addressController,
-              decoration: InputDecoration(labelText: 'Address'),
+              decoration: InputDecoration(labelText: 'Address'.tr),
               maxLines: 2,
             ),
             SizedBox(height: 10),
             TextField(
               controller: _shopnameController,
-              decoration: InputDecoration(labelText: 'Shop Name'),
+              decoration: InputDecoration(labelText: 'Shop Name'.tr),
               maxLines: 2,
             ),
             SizedBox(height: 20),
@@ -117,7 +120,7 @@ class _SignupScreenState extends State<SignupScreen> {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: _registerUser,
-              child: Text('Sign Up'),
+              child: Text('Sign Up'.tr),
             ),
           ],
         ),

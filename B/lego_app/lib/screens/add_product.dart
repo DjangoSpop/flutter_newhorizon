@@ -1,13 +1,15 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:get/get.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:lego_app/controllers/auth_controller.dart';
 import 'package:lego_app/controllers/product_controller.dart';
 import 'package:lego_app/models/product.dart';
+
 import '../service/api_service.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:lego_app/controllers/auth_controller.dart';
 
 class AddProductScreen extends StatefulWidget {
   @override
@@ -43,11 +45,11 @@ class _AddProductScreenState extends State<AddProductScreen>
   ];
   final List<File> _images = [];
   final List<String> _categories = [
-    'Men',
-    'Women',
-    'Kids',
-    'Accessories',
-    'Shoes'
+    'Men'.tr,
+    'Women'.tr,
+    'Kids'.tr,
+    'Accessories'.tr,
+    'Shoes'.tr
   ];
 
   @override
@@ -81,7 +83,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         _barcodeController.text = barcodeScanRes;
       }
     } catch (e) {
-      print('Error scanning barcode: $e');
+      print('Error scanning barcode: $e'.tr);
     }
   }
 
@@ -93,12 +95,12 @@ class _AddProductScreenState extends State<AddProductScreen>
         children: [
           ListTile(
             leading: Icon(Icons.photo_library),
-            title: Text('Gallery'),
+            title: Text('Gallery'.tr),
             onTap: () => Navigator.of(context).pop(ImageSource.gallery),
           ),
           ListTile(
             leading: Icon(Icons.camera_alt),
-            title: Text('Camera'),
+            title: Text('Camera'.tr),
             onTap: () => Navigator.of(context).pop(ImageSource.camera),
           ),
         ],
@@ -169,7 +171,7 @@ class _AddProductScreenState extends State<AddProductScreen>
       );
 
       productController.addProduct(product, images);
-      Get.back(); // Navigate back after adding the product
+      Get.to('buyer'); // Navigate back after adding the product
     }
   }
 
@@ -199,13 +201,13 @@ class _AddProductScreenState extends State<AddProductScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Product'),
+        title: Text('Add Product'.tr),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(icon: Icon(Icons.image), text: 'Images'),
-            Tab(icon: Icon(Icons.description), text: 'Details'),
-            Tab(icon: Icon(Icons.price_change), text: 'Pricing'),
+            Tab(icon: Icon(Icons.image), text: 'Images'.tr),
+            Tab(icon: Icon(Icons.description), text: 'Details'.tr),
+            Tab(icon: Icon(Icons.price_change), text: 'Pricing'.tr),
           ],
         ),
       ),
@@ -239,34 +241,34 @@ class _AddProductScreenState extends State<AddProductScreen>
           TextFormField(
             controller: _minQuantityController,
             decoration: InputDecoration(
-              labelText: 'Minimum Quantity',
+              labelText: 'Minimum Quantity'.tr,
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             validator: (value) =>
-                value!.isEmpty ? 'Please enter a minimum quantity' : null,
+                value!.isEmpty ? 'Please enter a minimum quantity'.tr : null,
           ),
           SizedBox(height: 16),
           TextFormField(
             controller: _discountedPriceController,
             decoration: InputDecoration(
-              labelText: 'Discounted Price',
+              labelText: 'Discounted Price'.tr,
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             validator: (value) =>
-                value!.isEmpty ? 'Please enter a discounted price' : null,
+                value!.isEmpty ? 'Please enter a discounted price'.tr : null,
           ),
           SizedBox(height: 16),
           TextFormField(
             controller: _buyNowPriceController,
             decoration: InputDecoration(
-              labelText: 'Buy Now Price',
+              labelText: 'Buy Now Price'.tr,
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             validator: (value) =>
-                value!.isEmpty ? 'Please enter a buy now price' : null,
+                value!.isEmpty ? 'Please enter a buy now price'.tr : null,
           ),
         ],
       ),
@@ -278,16 +280,16 @@ class _AddProductScreenState extends State<AddProductScreen>
       padding: EdgeInsets.all(16),
       child: Column(
         children: [
-          Text('Add images', style: Theme.of(context).textTheme.titleLarge),
+          Text('Add images'.tr, style: Theme.of(context).textTheme.titleLarge),
           SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _pickImage,
             icon: Icon(Icons.add_a_photo),
-            label: Text('Add Images'),
+            label: Text('Add Images'.tr),
           ),
           SizedBox(height: 16),
           _images.isEmpty
-              ? Text('No images selected.')
+              ? Text('No images selected.'.tr)
               : Container(
                   height: 120,
                   child: ListView.builder(
@@ -331,26 +333,27 @@ class _AddProductScreenState extends State<AddProductScreen>
           TextFormField(
             controller: _nameProductController,
             decoration: InputDecoration(
-              labelText: 'Product Name',
+              labelText: 'Product Name'.tr,
               border: OutlineInputBorder(),
             ),
             validator: (value) =>
-                value!.isEmpty ? 'Please enter a product name' : null,
+                value!.isEmpty ? 'Please enter a product name'.tr : null,
           ),
           SizedBox(height: 16),
           TextFormField(
             controller: _descriptionController,
             decoration: InputDecoration(
-              labelText: 'Description',
+              labelText: 'Description'.tr,
               border: OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: Icon(Icons.scanner),
-                onPressed: _scanText,
+                onPressed: null,
+                // onPressed: _scanText,
               ),
             ),
             maxLines: 3,
             validator: (value) =>
-                value!.isEmpty ? 'Please enter a description' : null,
+                value!.isEmpty ? 'Please enter a description'.tr : null,
           ),
           SizedBox(height: 16),
           TextFormField(
@@ -364,30 +367,43 @@ class _AddProductScreenState extends State<AddProductScreen>
               ),
             ),
             validator: (value) =>
-                value!.isEmpty ? 'Please enter or scan a barcode' : null,
+                value!.isEmpty ? 'Please enter or scan a barcode'.tr : null,
           ),
           SizedBox(height: 16),
           TextFormField(
             controller: _totalQuantityController,
             decoration: InputDecoration(
-              labelText: 'Total Quantity',
+              labelText: 'Total Quantity'.tr,
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             validator: (value) =>
-                value!.isEmpty ? 'Please enter the total quantity' : null,
+                value!.isEmpty ? 'Please enter the total quantity'.tr : null,
           ),
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _selectedCategory,
             decoration: InputDecoration(
-              labelText: 'Category',
+              labelText: 'Category'.tr,
               border: OutlineInputBorder(),
+              filled: true, // Optional: Adds a background color
+              fillColor: Colors
+                  .black, // Optional: Light grey background for the input field
+              labelStyle: TextStyle(color: Colors.black), // Label text color
             ),
+            dropdownColor: Colors.black87,
+
+            // Background color of the dropdown menu
+            style: const TextStyle(
+                color: Colors.white), // Text color of the selected item
             items: _categories.map((category) {
-              return DropdownMenuItem(
+              return DropdownMenuItem<String>(
                 value: category,
-                child: Text(category),
+                child: Text(
+                  category,
+                  style: TextStyle(
+                      color: Colors.white), // Text color of dropdown items
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -396,11 +412,11 @@ class _AddProductScreenState extends State<AddProductScreen>
               });
             },
             validator: (value) =>
-                value == null ? 'Please select a category' : null,
+                value == null ? 'Please select a category'.tr : null,
           ),
           SizedBox(height: 16),
           Text(
-            'Sizes and Quantities',
+            'Sizes and Quantities'.tr,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           ListView.builder(
@@ -417,11 +433,11 @@ class _AddProductScreenState extends State<AddProductScreen>
                     child: TextFormField(
                       controller: _sizesController[index],
                       decoration: InputDecoration(
-                        labelText: 'Size',
+                        labelText: 'Size'.tr,
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) =>
-                          value!.isEmpty ? 'Enter size' : null,
+                          value!.isEmpty ? 'Enter size'.tr : null,
                     ),
                   ),
                   SizedBox(width: 8),
@@ -429,12 +445,12 @@ class _AddProductScreenState extends State<AddProductScreen>
                     child: TextFormField(
                       controller: _sizeQuantityControllers[sizeKey],
                       decoration: InputDecoration(
-                        labelText: 'Quantity',
+                        labelText: 'Quantity'.tr,
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) =>
-                          value!.isEmpty ? 'Enter quantity' : null,
+                          value!.isEmpty ? 'Enter quantity'.tr : null,
                     ),
                   ),
                   IconButton(
@@ -448,7 +464,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           TextButton.icon(
             onPressed: _addSize,
             icon: Icon(Icons.add),
-            label: Text('Add Size'),
+            label: Text('Add Size'.tr),
           ),
         ],
       ),
