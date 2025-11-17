@@ -4,12 +4,15 @@ import 'package:lego_app/screens/login.dart';
 import 'package:lego_app/service/auth_service.dart';
 import 'package:logger/logger.dart';
 
+/// AuthController acts as a proxy between UI and AuthService
+/// Provides convenient methods for authentication flows
 class AuthController extends GetxController {
   final AuthService _authService;
   final Logger _logger = Logger();
-  final _userRole = Get.find<AuthService>().userRole;
+
   AuthController(this._authService);
 
+  // Expose AuthService state to UI
   Rx<User?> get user => _authService.currentUser;
   RxBool get isLoading => _authService.isLoading;
   RxBool get isAuthenticated => _authService.isAuthenticated;
@@ -20,6 +23,7 @@ class AuthController extends GetxController {
     checkLoginStatus();
   }
 
+  /// Check if user is already logged in
   Future<void> checkLoginStatus() async {
     try {
       await _authService.checkAuthStatus();
@@ -31,25 +35,34 @@ class AuthController extends GetxController {
     }
   }
 
+  /// Login user with username and password
   Future<void> login(String username, String password) async {
     try {
       await _authService.login(username, password);
       _logger.i('User logged in successfully: ${user.value?.username}');
 
-      // final userRole = user.value?.role; ;
-      // navigateBasedOnRole(userRole!);
+      // Navigation handled by AuthWrapper based on user role
+      // Or explicitly navigate if needed
+      final userRole = user.value?.role;
+      if (userRole != null) {
+        navigateBasedOnRole(userRole);
+      }
     } catch (e) {
       _logger.e('Login error', error: e);
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
       Get.snackbar(
-          'Login Failed', 'Please check your credentials and try again.');
+        'Login Failed',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
+  /// Navigate user to appropriate screen based on role
   void navigateBasedOnRole(String userRole) {
-    final userRole = user.value?.role;
     _logger.i('Navigating based on user role: $userRole');
 
-    switch (userRole) {
+    switch (userRole.toLowerCase()) {
       case 'admin':
         Get.offAllNamed('/admin');
         break;
@@ -59,13 +72,21 @@ class AuthController extends GetxController {
       case 'buyer':
         Get.offAllNamed('/buyer');
         break;
+      case 'manufacturer':
+        Get.offAllNamed('/buyer'); // Or specific manufacturer screen
+        break;
       default:
         _logger.w('Unknown or null user role: $userRole');
-        Get.snackbar('Error', 'Invalid user role. Please contact support.');
+        Get.snackbar(
+          'Error',
+          'Invalid user role. Please contact support.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         Get.offAllNamed('/login');
     }
   }
 
+  /// Logout current user
   Future<void> logout() async {
     try {
       await _authService.logout();
@@ -73,10 +94,15 @@ class AuthController extends GetxController {
       Get.offAll(() => LoginScreen());
     } catch (e) {
       _logger.e('Logout error', error: e);
-      Get.snackbar('Logout Failed', 'An error occurred. Please try again.');
+      Get.snackbar(
+        'Logout Failed',
+        'An error occurred. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
+  /// Register a new user
   Future<void> register({
     required String username,
     required String password,
@@ -88,7 +114,7 @@ class AuthController extends GetxController {
     required String address,
   }) async {
     try {
-      await _authService.registerWithEmailAndPassword(
+      await _authService.register(
         username: username,
         password: password,
         password2: password2,
@@ -98,12 +124,57 @@ class AuthController extends GetxController {
         shopname: shopname,
         address: address,
       );
+
       _logger.i('User registered successfully: $username');
-      navigateBasedOnRole(role);
+
+      // Check if user is authenticated after registration
+      if (isAuthenticated.value) {
+        navigateBasedOnRole(role);
+      } else {
+        // If registration doesn't auto-login, go to login screen
+        Get.snackbar(
+          'Success',
+          'Registration successful! Please login.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        Get.offAllNamed('/login');
+      }
     } catch (e) {
       _logger.e('Registration error', error: e);
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
       Get.snackbar(
-          'Registration Failed', 'An error occurred. Please try again.');
+        'Registration Failed',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
+
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
+
+  /// Get current user role
+  String? get userRole => _authService.getUserRole();
+
+  /// Get current user ID
+  String? get userId => _authService.getUserId();
+
+  /// Get current username
+  String? get username => _authService.getUsername();
+
+  /// Check if user has a specific role
+  bool hasRole(String role) => _authService.hasRole(role);
+
+  /// Check if user is admin
+  bool get isAdmin => _authService.isAdmin;
+
+  /// Check if user is seller
+  bool get isSeller => _authService.isSeller;
+
+  /// Check if user is buyer
+  bool get isBuyer => _authService.isBuyer;
+
+  /// Check if user is manufacturer
+  bool get isManufacturer => _authService.isManufacturer;
 }
