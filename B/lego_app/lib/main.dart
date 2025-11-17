@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lego_app/controllers/auth_controller.dart';
 import 'package:lego_app/controllers/cart_controller.dart';
 import 'package:lego_app/controllers/group_buy_controller.dart';
+import 'package:lego_app/controllers/order_controller.dart';
 import 'package:lego_app/controllers/product_controller.dart';
 import 'package:lego_app/screens/add_product.dart';
 import 'package:lego_app/screens/admin.dart';
@@ -13,6 +14,9 @@ import 'package:lego_app/screens/finance_screen.dart';
 import 'package:lego_app/screens/group_buy_screen.dart';
 import 'package:lego_app/screens/login.dart';
 import 'package:lego_app/screens/manage_orders.dart';
+import 'package:lego_app/screens/order_detail_screen.dart';
+import 'package:lego_app/screens/order_list_screen.dart';
+import 'package:lego_app/screens/order_tracking_screen.dart';
 import 'package:lego_app/screens/products.dart';
 import 'package:lego_app/screens/signupscreen.dart';
 import 'package:lego_app/screens/skip_choose_screen.dart';
@@ -23,6 +27,7 @@ import 'package:lego_app/service/auth_service.dart';
 import 'package:lego_app/service/auth_wrapper.dart';
 import 'package:lego_app/service/group_buy_service.dart';
 import 'package:lego_app/service/notification_service.dart';
+import 'package:lego_app/service/order_service.dart';
 import 'package:lego_app/service/product_service.dart';
 
 import 'screens/cart_screen.dart';
@@ -42,6 +47,7 @@ Future<void> initServices() async {
   await Get.putAsync<ProductService>(() async => await ProductService().init());
   await Get.putAsync<GroupBuyService>(
       () async => await GroupBuyService().init());
+  await Get.putAsync<OrderService>(() async => await OrderService().init());
 
   // await Get.putAsync<GroupBuyService>(() async => await GroupBuyService(
   //     apiService: Get.find<ApiService>(),
@@ -52,6 +58,7 @@ Future<void> initServices() async {
   Get.put<ProductController>(ProductController());
   Get.put<CartController>(CartController());
   Get.put<GroupBuyController>(GroupBuyController());
+  Get.put<OrderController>(OrderController());
 }
 
 class MyApp extends StatelessWidget {
@@ -87,6 +94,10 @@ class MyApp extends StatelessWidget {
             productService: Get.find<ProductService>(),
           ),
         ),
+        // Order Management Routes
+        GetPage(name: '/orders', page: () => OrderListScreen()),
+        GetPage(name: '/orderDetail', page: () => OrderDetailScreen()),
+        GetPage(name: '/orderTracking', page: () => OrderTrackingScreen()),
       ],
       translations: AppTranslations(),
       locale: Get.deviceLocale,
