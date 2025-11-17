@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:lego_app/controllers/auth_controller.dart';
 import 'package:lego_app/controllers/cart_controller.dart';
 import 'package:lego_app/controllers/group_buy_controller.dart';
@@ -34,6 +35,10 @@ import 'screens/cart_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize GetStorage for cart persistence
+  await GetStorage.init();
+
   await initServices();
   runApp(MyApp());
 }
