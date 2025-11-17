@@ -1,49 +1,65 @@
 import 'dart:convert';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:http/http.dart' as http;
+import 'auth_service.dart';
 
+/// ApiService provides a centralized HTTP client with caching and authentication
+/// Now uses AuthService for token management to ensure consistency
 class ApiService {
   final String baseUrl;
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   // Cache configuration
   final Map<String, dynamic> _cache = {};
-  final Duration _cacheExpiration = Duration(minutes: 5);
+  final Duration _cacheExpiration = const Duration(minutes: 5);
+
+  // AuthService for token management
+  AuthService? _authService;
 
   ApiService({required this.baseUrl});
 
-  // Token Management
-  Future<void> _saveToken(String token) async {
-    await _secureStorage.write(key: 'jwt_token', value: token);
+  /// Get AuthService instance lazily
+  AuthService get _auth {
+    _authService ??= Get.find<AuthService>();
+    return _authService!;
   }
 
-  Future<String?> _getToken() async {
-    return await _secureStorage.read(key: 'jwt_token');
-  }
+  // ============================================================================
+  // HEADERS MANAGEMENT
+  // ============================================================================
 
-  Future<void> _deleteToken() async {
-    await _secureStorage.delete(key: 'jwt_token');
-  }
+  /// Get headers with authentication token from AuthService
+  Future<Map<String, String>> _getHeaders({
+    String contentType = 'application/json',
+  }) async {
+    try {
+      final headers = await _auth.getAuthHeaders();
 
-  // Enhanced Headers Management
-  Future<Map<String, String>> _getHeaders(
-      {String contentType = 'application/json'}) async {
-    final token = await _getToken();
-    if (token == null) {
+      // Add additional headers
+      headers['Accept'] = 'application/json';
+      headers['X-App-Version'] = '1.0.0'; // For API versioning support
+
+      // Override content type if specified
+      if (contentType != 'application/json') {
+        headers['Content-Type'] = contentType;
+      }
+
+      return headers;
+    } catch (e) {
       throw UnauthorizedException();
     }
-    return {
-      'Content-Type': contentType,
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-      'X-App-Version': '1.0.0', // For versioning support
-    };
   }
 
-  // Enhanced Response Handler
-  Future<dynamic> _handleResponse(http.Response response,
-      {bool useCache = false, String? cacheKey}) async {
+  // ============================================================================
+  // RESPONSE HANDLER
+  // ============================================================================
+
+  /// Enhanced response handler with caching and error handling
+  Future<dynamic> _handleResponse(
+    http.Response response, {
+    bool useCache = false,
+    String? cacheKey,
+  }) async {
     switch (response.statusCode) {
       case 200:
       case 201:
@@ -56,9 +72,13 @@ class ApiService {
       case 401:
         // Token might be expired, try to refresh
         try {
-          await _refreshToken();
-          // Retry the original request
-          throw RetryRequestException();
+          final newToken = await _auth.refreshAccessToken();
+          if (newToken != null) {
+            // Retry the original request
+            throw RetryRequestException();
+          } else {
+            throw UnauthorizedException();
+          }
         } catch (e) {
           throw UnauthorizedException();
         }
@@ -86,7 +106,11 @@ class ApiService {
     }
   }
 
-  // Cache Management
+  // ============================================================================
+  // CACHE MANAGEMENT
+  // ============================================================================
+
+  /// Store data in cache with timestamp
   void _cacheData(String key, dynamic data) {
     _cache[key] = {
       'data': data,
@@ -94,6 +118,7 @@ class ApiService {
     };
   }
 
+  /// Retrieve cached data if not expired
   dynamic _getCachedData(String key) {
     final cachedItem = _cache[key];
     if (cachedItem == null) return null;
@@ -107,7 +132,21 @@ class ApiService {
     return cachedItem['data'];
   }
 
-  // Enhanced Base Methods
+  /// Clear all cached data
+  void clearCache() {
+    _cache.clear();
+  }
+
+  /// Clear specific cached item
+  void clearCacheItem(String key) {
+    _cache.remove(key);
+  }
+
+  // ============================================================================
+  // BASE HTTP METHODS
+  // ============================================================================
+
+  /// GET request with optional caching
   Future<dynamic> get(String endpoint, {bool useCache = false}) async {
     if (useCache) {
       final cachedData = _getCachedData(endpoint);
@@ -120,18 +159,27 @@ class ApiService {
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
       );
-      return _handleResponse(response, useCache: useCache, cacheKey: endpoint);
+      return _handleResponse(
+        response,
+        useCache: useCache,
+        cacheKey: endpoint,
+      );
     } on RetryRequestException {
-      // Retry the request once
+      // Retry the request once with new token
       final headers = await _getHeaders();
       final response = await http.get(
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
       );
-      return _handleResponse(response, useCache: useCache, cacheKey: endpoint);
+      return _handleResponse(
+        response,
+        useCache: useCache,
+        cacheKey: endpoint,
+      );
     }
   }
 
+  /// POST request
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
     try {
       final headers = await _getHeaders();
@@ -152,47 +200,118 @@ class ApiService {
     }
   }
 
+  /// PATCH request
   Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
-    final headers = await _getHeaders();
-    final response = await http.patch(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: headers,
-      body: json.encode(data),
-    );
-    return _handleResponse(response);
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      return _handleResponse(response);
+    } on RetryRequestException {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      return _handleResponse(response);
+    }
   }
 
-  // Group Buy Specific Methods
+  /// PUT request
+  Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      return _handleResponse(response);
+    } on RetryRequestException {
+      final headers = await _getHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      return _handleResponse(response);
+    }
+  }
+
+  /// DELETE request
+  Future<dynamic> delete(String endpoint) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+      );
+      return _handleResponse(response);
+    } on RetryRequestException {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+      );
+      return _handleResponse(response);
+    }
+  }
+
+  // ============================================================================
+  // GROUP BUY SPECIFIC METHODS
+  // ============================================================================
+
+  /// Get group buys with optional filter for active only
   Future<dynamic> getGroupBuys({bool activeOnly = false}) async {
     final endpoint = activeOnly ? '/group-buys/active' : '/group-buys';
     return get(endpoint, useCache: true);
   }
 
+  /// Create a new group buy
   Future<dynamic> createGroupBuy(Map<String, dynamic> groupBuyData) async {
     return post('/group-buys', groupBuyData);
   }
 
+  /// Update group buy target
   Future<dynamic> updateGroupBuyTarget(String groupBuyId, int newTarget) async {
     return patch('/group-buys/$groupBuyId/target', {'newTarget': newTarget});
   }
 
+  /// Join a group buy
   Future<dynamic> joinGroupBuy(
-      String groupBuyId, Map<String, dynamic> joinData) async {
+    String groupBuyId,
+    Map<String, dynamic> joinData,
+  ) async {
     return post('/group-buys/$groupBuyId/join', joinData);
   }
 
+  /// Leave a group buy
   Future<dynamic> leaveGroupBuy(String groupBuyId, String userId) async {
     return post('/group-buys/$groupBuyId/leave', {'userId': userId});
   }
 
+  /// Track share activity
   Future<dynamic> trackShare(
-      String groupBuyId, Map<String, dynamic> shareData) async {
+    String groupBuyId,
+    Map<String, dynamic> shareData,
+  ) async {
     return post('/group-buys/$groupBuyId/shares', shareData);
   }
 
-  // File Upload Methods
+  // ============================================================================
+  // FILE UPLOAD METHODS
+  // ============================================================================
+
+  /// Upload group buy image
   Future<dynamic> uploadGroupBuyImage(
-      String groupBuyId, List<int> imageBytes, String fileName) async {
+    String groupBuyId,
+    List<int> imageBytes,
+    String fileName,
+  ) async {
     final uri = Uri.parse('$baseUrl/group-buys/$groupBuyId/image');
     final request = http.MultipartRequest('POST', uri)
       ..files.add(http.MultipartFile.fromBytes(
@@ -201,7 +320,9 @@ class ApiService {
         filename: fileName,
       ));
 
+    // Get auth headers (without Content-Type for multipart)
     final headers = await _getHeaders(contentType: 'multipart/form-data');
+    headers.remove('Content-Type'); // Will be set automatically
     request.headers.addAll(headers);
 
     final streamedResponse = await request.send();
@@ -209,73 +330,71 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  // Analytics Methods
+  // ============================================================================
+  // ANALYTICS METHODS
+  // ============================================================================
+
+  /// Get group buy analytics
   Future<dynamic> getGroupBuyAnalytics(String groupBuyId) async {
     return get('/group-buys/$groupBuyId/analytics');
   }
 
-  // Notification Methods
+  // ============================================================================
+  // NOTIFICATION METHODS
+  // ============================================================================
+
+  /// Send group buy notification
   Future<dynamic> sendGroupBuyNotification(
-      Map<String, dynamic> notificationData) async {
+    Map<String, dynamic> notificationData,
+  ) async {
     return post('/notifications/group-buy', notificationData);
   }
-
-  // Token Refresh
-  Future<void> _refreshToken() async {
-    final refreshToken = await _secureStorage.read(key: 'refresh_token');
-    if (refreshToken == null) throw UnauthorizedException();
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/refresh'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'refresh_token': refreshToken}),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      await _saveToken(data['access_token']);
-    } else {
-      throw UnauthorizedException();
-    }
-  }
-
-  delete(String s) {}
 }
 
-// Enhanced Exception Classes
+// ============================================================================
+// EXCEPTION CLASSES
+// ============================================================================
+
+/// Exception for requesting a retry of the API call
 class RetryRequestException implements Exception {}
 
+/// Exception for 403 Forbidden errors
 class ForbiddenException implements Exception {
   @override
-  String toString() => 'ForbiddenException: Access denied';
+  String toString() => 'Access denied';
 }
 
+/// Exception for 404 Not Found errors
 class NotFoundException implements Exception {
   @override
-  String toString() => 'NotFoundException: Resource not found';
+  String toString() => 'Resource not found';
 }
 
+/// Exception for 409 Conflict errors
 class ConflictException implements Exception {
   final String message;
   ConflictException(this.message);
 
   @override
-  String toString() => 'ConflictException: $message';
+  String toString() => 'Conflict: $message';
 }
 
+/// Exception for 422 Validation errors
 class ValidationException implements Exception {
   final String message;
   ValidationException(this.message);
 
   @override
-  String toString() => 'ValidationException: $message';
+  String toString() => 'Validation error: $message';
 }
 
+/// Exception for 429 Rate Limit errors
 class RateLimitException implements Exception {
   @override
-  String toString() => 'RateLimitException: Too many requests';
+  String toString() => 'Too many requests. Please try again later.';
 }
 
+/// Generic API exception
 class ApiException implements Exception {
   final int statusCode;
   final String message;
@@ -283,10 +402,11 @@ class ApiException implements Exception {
   ApiException({required this.statusCode, required this.message});
 
   @override
-  String toString() => 'ApiException: $statusCode - $message';
+  String toString() => 'API Error ($statusCode): $message';
 }
 
+/// Exception for 401 Unauthorized errors
 class UnauthorizedException implements Exception {
   @override
-  String toString() => 'UnauthorizedException: User is not authenticated';
+  String toString() => 'Authentication required. Please login.';
 }
